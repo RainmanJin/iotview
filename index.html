@@ -1,0 +1,91 @@
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="lib/grapheditor/styles/grapheditor.css">
+    <script type="text/javascript" src="js/Config.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Init.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/deflate/pako.min.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/deflate/base64.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/jscolor/jscolor.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/sanitizer/sanitizer.min.js"></script>
+	<script type="text/javascript" src="lib/mxgraph/src/js/mxClient.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/EditorUi.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Editor.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Sidebar.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Graph.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Format.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Shapes.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Actions.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Menus.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Toolbar.js"></script>
+	<script type="text/javascript" src="lib/grapheditor/js/Dialogs.js"></script>
+
+    <script type="text/javascript" src="js/App.js"></script>
+	<script type="text/javascript" src="js/MyShapes.js"></script>
+	<script type="text/javascript" src="js/MxGraphExt.js"></script>
+
+	<script type="text/javascript" src="lib/jquery/jquery.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <style type="text/css">
+
+	</style>
+
+</head>
+<body class="geEditor">
+	<script type="text/javascript">
+		// Extends EditorUi to update I/O action states based on availability of backend
+		(function()
+		{
+			var editorUiInit = EditorUi.prototype.init;
+			
+			EditorUi.prototype.init = function()
+			{
+				editorUiInit.apply(this, arguments);
+				this.actions.get('export').setEnabled(false);
+
+				// Updates action states which require a backend
+				if (!Editor.useLocalStorage)
+				{
+					mxUtils.post(OPEN_URL, '', mxUtils.bind(this, function(req)
+					{
+						var enabled = req.getStatus() != 404;
+						this.actions.get('open').setEnabled(enabled || Graph.fileSupport);
+						this.actions.get('import').setEnabled(enabled || Graph.fileSupport);
+						this.actions.get('save').setEnabled(enabled);
+						this.actions.get('saveAs').setEnabled(enabled);
+						this.actions.get('export').setEnabled(enabled);
+					}));
+				}
+			};
+			
+			// Adds required resources (disables loading of fallback properties, this can only
+			// be used if we know that all keys are defined in the language specific file)
+			mxResources.loadDefaultBundle = false;
+			var bundle = mxResources.getDefaultBundle(RESOURCE_BASE, mxLanguage) ||
+				mxResources.getSpecialBundle(RESOURCE_BASE, mxLanguage);
+
+			// Fixes possible asynchronous requests
+			mxUtils.getAll([bundle, STYLE_PATH + '/default.xml'], function(xhr)
+			{
+				// Adds bundle text to resources
+				mxResources.parse(xhr[0].getText());
+				
+				// Configures the default graph theme
+				var themes = new Object();
+				themes[Graph.prototype.defaultThemeName] = xhr[1].getDocumentElement(); 
+				
+				// Main
+				new EditorUi(new Editor(urlParams['chrome'] == '0', themes));
+			}, function()
+			{
+				document.body.innerHTML = '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
+			});
+		})();
+	</script>
+</body>
+</html>

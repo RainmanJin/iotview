@@ -1,0 +1,79 @@
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>监控展示</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script type="text/javascript" src="js/Config.js"></script>
+    <script type="text/javascript" src="lib/grapheditor/deflate/base64.js"></script>
+    <script type="text/javascript" src="lib/grapheditor/sanitizer/sanitizer.min.js"></script>
+    <script type="text/javascript" src="lib/mxgraph/src/js/mxClient.js"></script>
+    <script type="text/javascript" src="lib/grapheditor/js/Graph.js"></script>
+    <script type="text/javascript" src="lib/grapheditor/js/Shapes.js"></script>
+
+    <script type="text/javascript" src="js/App.js"></script>
+    <script type="text/javascript" src="js/MyShapes.js"></script>
+    <script type="text/javascript" src="lib/jquery/jquery.js"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+
+    <style type="text/css">
+        html,body{
+            height: 100%;
+        }
+        body{
+            margin: 0;
+        }
+        #graphContainer {
+            overflow: visible;
+            cursor: default;
+        }
+        #mainBox{
+            display:inline-block;
+        }
+    </style>
+
+</head>
+<body class="geEditor" onload="main(document.getElementById('graphContainer'))">
+<div id="mainBox" >
+    <div style="display:none;" id="import">
+        Input:
+        <br/>
+        <textarea rows="24" cols="100" id="textarea" placeholder="mxGraphModel"></textarea>
+        <br/>
+        <button onclick="show(document.getElementById('textarea').value);return false;">Show</button>
+    </div>
+    <div id="graphContainer"></div>
+</div>
+<script type="text/javascript">
+    function show(data) {
+        var xmlDoc = mxUtils.parseXml(data);
+        var codec = new mxCodec(xmlDoc);
+        codec.decode(xmlDoc.documentElement, graph.getModel());
+
+        var mainBox = document.getElementById('mainBox');
+        var w = urlParams.w ? urlParams.w:"100%";
+        var h = urlParams.h ? urlParams.h:"100%";
+        var bg = urlParams.bg ? urlParams.bg:"images/grid.gif";
+        mainBox.style.cssText="background-image:url("+bg+");width:"+w+"; height:"+h+";"
+
+    }
+
+
+    function main(container) {
+        graph = new Graph(container);
+        graph.isView = true;//设置为浏览模式
+        graph.resizeContainer = true;
+        graph.setEnabled(false);
+        var xml = urlParams.xml;
+        if(xml){
+            show(Base64.decode(xml))
+        }else{
+            document.getElementById('import').style.display="block";
+        }
+    };
+</script>
+</body>
+</html>
