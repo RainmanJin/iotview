@@ -284,7 +284,7 @@ function mqttAdapter(graph, cell) {
                 userName: self.getStyle(mxConstants.STYLE_MQTT_USERNAME, ""),
                 password: self.getStyle(mxConstants.STYLE_MQTT_PASSWORD, "")
             };
-            var id = self.id.length > 0 ? this.id : new Date().getTime();
+            var id = self.id.length > 0 ? self.id : new Date().getTime();
             self.client = new MqttClient(id.toString(), host, port, options);
 
             self.client.onConnect = function () {
